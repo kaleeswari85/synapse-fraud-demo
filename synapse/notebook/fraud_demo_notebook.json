@@ -1,0 +1,98 @@
+{
+	"name": "fraud_demo_notebook",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "mysparkspool",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "cc994774-2361-42c5-8fe1-b64d4cac8856"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "python"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/77bdf056-d2d7-4d5f-85dd-48ed6d6eac2b/resourceGroups/kals85rg/providers/Microsoft.Synapse/workspaces/kals85workspace/bigDataPools/mysparkspool",
+				"name": "mysparkspool",
+				"type": "Spark",
+				"endpoint": "https://kals85workspace.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/mysparkspool",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.5",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"# nb_fraud_score — Reads staged transactions and flags high-risk ones \n",
+					"\n",
+					"from pyspark.sql import SparkSession \n",
+					"\n",
+					"from pyspark.sql.functions import col, when \n",
+					"\n",
+					" \n",
+					"\n",
+					"spark = SparkSession.builder.getOrCreate() \n",
+					"\n",
+					" \n",
+					"\n",
+					"df = spark.read.parquet( \n",
+					"\n",
+					"    'abfss://synapse@adlsfrauddemo.dfs.core.windows.net/staging/fraud/') \n",
+					"\n",
+					" \n",
+					"\n",
+					"# KEY PARAMETER — change this value to demonstrate Git versioning \n",
+					"\n",
+					"THRESHOLD = 0.75 \n",
+					"\n",
+					" \n",
+					"\n",
+					"df_flagged = df.withColumn('flagged_high_risk', \n",
+					"\n",
+					"    when(col('fraud_score') > THRESHOLD, 1).otherwise(0)) \n",
+					"\n",
+					" \n",
+					"\n",
+					"df_flagged.write.mode('overwrite').parquet( \n",
+					"\n",
+					"    'abfss://synapse@adlsfrauddemo.dfs.core.windows.net/output/fraud_flagged/') \n",
+					"\n",
+					" \n",
+					"\n",
+					"count = df_flagged.filter(col('flagged_high_risk') == 1).count() \n",
+					"\n",
+					"print(f'Threshold: {THRESHOLD} | High-risk flagged: {count}') "
+				],
+				"execution_count": null
+			}
+		]
+	}
+}

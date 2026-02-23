@@ -1,0 +1,17 @@
+{
+	"name": "fraud_demo",
+	"properties": {
+		"content": {
+			"query": "-- BLOCK 1: Create database (run, then switch 'Connect to' dropdown to fraud_demo) \n\nCREATE DATABASE fraud_demo; \n\n \n\n-- BLOCK 2: Master key and credentials \n\nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'Demo@Password123!'; \n\n \n\nCREATE DATABASE SCOPED CREDENTIAL adls_cred \n\n    WITH IDENTITY = 'Managed Identity'; \n\n \n\nCREATE EXTERNAL DATA SOURCE adls_raw \n\n    WITH ( LOCATION = 'abfss://synapse@adlsfrauddemo.dfs.core.windows.net/', \n\n           CREDENTIAL = adls_cred ); \n\n \n\nCREATE EXTERNAL FILE FORMAT csv_fmt \n\n    WITH ( FORMAT_TYPE = DELIMITEDTEXT, \n\n           FORMAT_OPTIONS (FIELD_TERMINATOR = ',', FIRST_ROW = 2) ); \n\n \n\n-- BLOCK 3: External table for transactions \n\nCREATE EXTERNAL TABLE dbo.transactions ( \n\n    transaction_id     VARCHAR(20), customer_id      VARCHAR(15), \n\n    account_id         VARCHAR(15), transaction_date VARCHAR(30), \n\n    amount_usd         FLOAT,       merchant_category VARCHAR(30), \n\n    channel            VARCHAR(20), country_code     VARCHAR(5), \n\n    is_fraud_label     INT,         fraud_score      FLOAT, \n\n    ip_address         VARCHAR(20), device_fingerprint VARCHAR(50) \n\n) \n\nWITH ( LOCATION = 'raw/transactions/', \n\n       DATA_SOURCE = adls_raw, \n\n       FILE_FORMAT = csv_fmt ); \n\n \n\n-- BLOCK 4: Verify \n\nSELECT TOP 10 * FROM dbo.transactions; ",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "fraud_demo",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
