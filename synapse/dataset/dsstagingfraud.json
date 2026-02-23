@@ -1,0 +1,20 @@
+{
+	"name": "dsstagingfraud",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "kals85workspace-WorkspaceDefaultStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "fraud",
+				"fileSystem": "staging"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
